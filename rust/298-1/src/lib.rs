@@ -1,32 +1,17 @@
 fn is_all_ones(matrix: &[&Vec<usize>], row_idx: usize, col_idx: usize, size: usize) -> bool {
     // this takes a square submatrix of matrix starting from position row_idx and col_idx
     // and checks if it has only 1
-    // we fundamentally iterate over entire array for each check, which is extremely wasteful
-    // (we always skip rows above row_idx and cols to the left of col_idx, and then we also
-    // chip off rows from the bottom and cols from the right), but I got tired fighting borrow
-    // checker and trying to turn that into "hey, take n elements from row_idx, and then for
-    // each elem take n from col_idx, and turn that all into single stream, please"
+    for row in matrix.iter().skip(row_idx).take(size) {
+        let has_zero = row.iter()
+            .skip(col_idx)
+            .take(size)
+            .any(|&i| i == 0);
 
-    // it's either -1 here, or >= in comparisons below...
-    let last_row_idx = row_idx + size - 1;
-    let last_col_idx = col_idx + size - 1;
-
-    for (iidx, row) in matrix.iter().enumerate() {
-        for (jidx, value) in row.iter().enumerate() {
-            if row_idx > iidx          // row above starting position
-               || iidx > last_row_idx  // row below bottom of square
-               || col_idx > jidx       // col to the left of starting position
-               || jidx > last_col_idx  // col to the right of right end of square
-            {
-                continue
-            }
-            // if we can't have a single stream we could call .all() on, we might as well bail
-            // on first 0 found
-            if value == &0 {
-                return false;
-            }
+        if has_zero {
+            return false;
         }
     }
+
     true
 }
 
